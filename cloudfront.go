@@ -1,4 +1,4 @@
-package cloudfront
+package cfsigner
 
 import (
 	"crypto"

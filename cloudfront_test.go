@@ -1,4 +1,4 @@
-package cloudfront
+package cfsigner
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 )
 
 func TestMain(t *testing.T) {
-	expected := time.Now().Add(10*time.Minute)
-	
+	expected := time.Now().Add(10 * time.Minute)
+
 	conds := conditions{
 		DateLessThan: epochTime{
 			expected.Truncate(time.Millisecond).Unix(),
