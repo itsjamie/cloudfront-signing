@@ -57,11 +57,11 @@ func New(key *rsa.PrivateKey, keyPairId string) *CloudFront {
 	}
 }
 
-func (p Policy) Encode() string {
+func (p *Policy) Encode() string {
 	return invalidReplacer.Replace(base64.StdEncoding.EncodeToString(p.policy))
 }
 
-func (p Policy) Sign() (string, error) {
+func (p *Policy) Sign() (string, error) {
 	hash := hashSha(p.policy)
 	signed, err := rsa.SignPKCS1v15(nil, p.cf.key, crypto.SHA1, hash)
 	if err != nil {
@@ -71,7 +71,7 @@ func (p Policy) Sign() (string, error) {
 	return invalidReplacer.Replace(base64.StdEncoding.EncodeToString(signed)), nil
 }
 
-func (cf *CloudFront) CreatePolicy(resource string, expiry time.Time, validAt *time.Time, ip *string) (Policy, error) {
+func (cf *CloudFront) CreatePolicy(resource string, expiry time.Time, validAt *time.Time, ip *string) (*Policy, error) {
 	if expiry.IsZero() {
 		return nil, ErrMissingRequiredParam
 	}
@@ -84,7 +84,7 @@ func (cf *CloudFront) CreatePolicy(resource string, expiry time.Time, validAt *t
 
 	if validAt != nil {
 		conds.DateGreaterThan = &epochTime{
-			Timestamp: *validAt.Truncate(time.Millisecond).Unix(),
+			Timestamp: validAt.Truncate(time.Millisecond).Unix(),
 		}
 	}
 
@@ -99,13 +99,13 @@ func (cf *CloudFront) CreatePolicy(resource string, expiry time.Time, validAt *t
 		return nil, err
 	}
 
-	return Policy{cf: cf, policy: policy}, nil
+	return &Policy{cf: cf, policy: policy}, nil
 }
 
 func hashSha(policy []byte) []byte {
 	hash := sha1.New()
-	hash.Write(p.policy)
-	hash.Sum(nil)
+	hash.Write(policy)
+	return hash.Sum(nil)
 }
 
 func buildPolicy(resource string, conditions conditions) ([]byte, error) {
